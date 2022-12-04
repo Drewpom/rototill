@@ -16,21 +16,24 @@ const productIdSchema: JSONSchemaType<{
 }
 
 productsApi
-  .createRoute(HTTPMethod.Put, '/products/:id')
-  .params(productIdSchema)
-  .body<{
-    name: string,
-  }>({
-    type: 'object',
-    required: ['name'],
-    properties: {
-      name: {
-        type: 'string',
-      },
-    },
-  })
-  .handler(({ params, body }) => {
-    return {
-      id: params.id,
-    }
-  })
+  .createRoute(HTTPMethod.Post, '/:id', builder => 
+    builder
+      .params(productIdSchema)
+      .body<{
+        name: string,
+      }>({
+        type: 'object',
+        required: ['name'],
+        properties: {
+          name: {
+            type: 'string',
+          },
+        },
+      })
+      .handler(({ params, body }) => {
+        return {
+          id: params.id,
+          name: body.name,
+        };
+      })
+  )

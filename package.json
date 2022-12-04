@@ -1,12 +1,13 @@
 {
   "name": "rototill",
-  "version": "1.0.0",
-  "description": "A rotue building utility for Express to help with validatio, typings, and OpenAPI specs for REST APIs",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "A route building utility for Express to help with validation, typings, and OpenAPI specs for REST APIs",
+  "main": "lib/index.js",
   "type": "module",
+  "types": "./lib",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "run-example": "ts-node-esm ./example/index.ts"
   },
   "author": "",
@@ -14,11 +15,18 @@
   "devDependencies": {
     "@types/express": "^4.17.14",
     "@types/node": "^18.11.10",
+    "ajv": "^8.11.2",
+    "body-parser": "^1.20.1",
     "express": "^4.18.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.3"
   },
-  "dependencies": {
+  "peerDependencies": {
     "ajv": "^8.11.2"
-  }
+  },
+  "dependencies": {
+  },
+  "files": [
+    "/lib"
+  ]
 }
