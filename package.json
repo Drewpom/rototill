@@ -4,7 +4,10 @@
   "description": "A route building utility for Express to help with validation, typings, and OpenAPI specs for REST APIs",
   "main": "lib/index.js",
   "type": "module",
-  "types": "./lib",
+  "types": "./lib/index.d.ts",
+  "repository": {
+    "url": "https://github.com/Drewpom/rototill"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --project tsconfig.build.json",
