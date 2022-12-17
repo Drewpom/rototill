@@ -1,6 +1,6 @@
 {
   "name": "rototill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A route building utility for Express to help with validation, typings, and OpenAPI specs for REST APIs",
   "main": "lib/index.js",
   "type": "module",
@@ -27,8 +27,7 @@
   "peerDependencies": {
     "ajv": "^8.11.2"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "files": [
     "/lib"
   ]
