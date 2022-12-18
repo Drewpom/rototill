@@ -50,7 +50,7 @@ export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
     return new RouteBuilder<{}, undefined>(ajv, method,  path, [], undefined);
   }
 
-  addMiddlware<NewInjectedValues>(
+  addMiddleware<NewInjectedValues>(
     newStage: RouteMiddleware<NewInjectedValues>
   ): RouteBuilder<InjectedValues & NewInjectedValues, Output> {
     const newStages: Array<((request: Request) => any)> = this.stages.slice();
@@ -66,12 +66,12 @@ export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
 
   params<Params>(params: JSONSchemaType<Params>): RouteBuilder<InjectedValues & { params: Params }, Output> {
     const validator = createParamValidator(this.ajv, params);
-    return this.addMiddlware(validator);
+    return this.addMiddleware(validator);
   }
 
   body<Body>(body: JSONSchemaType<Body>): RouteBuilder<InjectedValues & { body: Body }, Output> {
     const validator = createBodyValidator(this.ajv, body);
-    return this.addMiddlware(validator);
+    return this.addMiddleware(validator);
   }
 
   output<NewOutput extends {}>(output: OptionalSchema<NewOutput>): RouteBuilder<InjectedValues, NewOutput> {
