@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 // app.use('/fdsfs', )
 app.use('/products', productsApi.routes({
-  productLoader(productId) {
+  async productLoader(productId) {
     return fetchProduct(productId);
   },
 }));

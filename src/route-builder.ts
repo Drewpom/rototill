@@ -1,6 +1,6 @@
 import Ajv, {JSONSchemaType} from "ajv"
 import { Request } from 'express';
-import { AnyRouteMiddleware, RouteMiddleware, HTTPMethod, OptionalSchema, MaybePromise, Route, RototillValidationError } from './types.js';
+import { AsyncRouteMiddleware, AnyRouteMiddleware, RouteMiddleware, HTTPMethod, OptionalSchema, MaybePromise, Route, RototillValidationError } from './types.js';
  
 const createParamValidator = <Params>(ajv: Ajv.default, schema: JSONSchemaType<Params>): ((request: Request) => { params: Params }) => {
   const validateParams = ajv.compile(schema);
@@ -50,7 +50,21 @@ export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
   addMiddleware<NewInjectedValues>(
     newStage: RouteMiddleware<InjectedValues, NewInjectedValues>
   ): RouteBuilder<InjectedValues & NewInjectedValues, Output> {
-    const newStages: Array<((request: Request, currentInjectedValues: InjectedValues) => any)> = this.stages.slice();
+    const newStages: AnyRouteMiddleware<InjectedValues>[] = this.stages.slice();
+    newStages.push(newStage);
+    return new RouteBuilder<InjectedValues & NewInjectedValues, Output>(
+      this.ajv,
+      this.method,
+      this.path,
+      newStages,
+      this.outputSchema,
+    );
+  }
+
+  addAsyncMiddleware<NewInjectedValues>(
+    newStage: AsyncRouteMiddleware<InjectedValues, NewInjectedValues>
+  ): RouteBuilder<InjectedValues & NewInjectedValues, Output> {
+    const newStages: AnyRouteMiddleware<InjectedValues>[] = this.stages.slice();
     newStages.push(newStage);
     return new RouteBuilder<InjectedValues & NewInjectedValues, Output>(
       this.ajv,

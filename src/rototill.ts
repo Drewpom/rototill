@@ -10,7 +10,7 @@ const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: 
       const injectedValues = injectedContext ?? {};
 
       for (let middleware of route.middlewares) {
-        Object.assign(injectedValues, middleware(req, injectedValues));
+        Object.assign(injectedValues, await middleware(req, injectedValues));
       }
 
       const response = await route.handler(injectedValues, req);
@@ -44,7 +44,7 @@ export class Rototill<InjectedContext = {}> {
   routes(injectedContext: InjectedContext | undefined = undefined): Router {
     const router = Router();
     for (let route of this._routes) {
-      router[route.method](route.path, compileRoute(route, injectedContext));
+      router[route.method](route.path, compileRoute(route, { context: injectedContext }));
     }
 
     return router;

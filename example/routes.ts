@@ -1,4 +1,4 @@
-import {Rototill, HTTPMethod, RouteMiddleware} from '../src/index.js';
+import {Rototill, HTTPMethod, AsyncRouteMiddleware} from '../src/index.js';
 import { JSONSchemaType } from 'ajv';
 import {ServerContext} from './types.js';
 import {Product} from './model.js';
@@ -19,9 +19,9 @@ const productIdSchema: JSONSchemaType<ProductIdParamsSchema> = {
   },
 }
 
-const fetchProductMidleware: RouteMiddleware<{ context: ServerContext, params: ProductIdParamsSchema }, { product: Product | null }> = (_, { context, params }) => {
+const fetchProductMidleware: AsyncRouteMiddleware<{ context: ServerContext, params: ProductIdParamsSchema }, { product: Product | null }> = async (_, { context, params }) => {
   return {
-    product: context.productLoader(params.id)
+    product: await context.productLoader(params.id)
   };
 };
 
@@ -50,7 +50,7 @@ productsApi
   .createRoute(HTTPMethod.Get, '/:id', builder => 
     builder
       .params(productIdSchema)
-      .addMiddleware(fetchProductMidleware)
+      .addAsyncMiddleware(fetchProductMidleware)
       .handler(({ params, product }) => {
         return {
           id: params.id,
