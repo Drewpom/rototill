@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import {productsApi} from './routes.js';
 import {RototillValidationError} from '../src/index.js';
+import {fetchProduct} from './model.js';
 
 const app = express()
 const port = 3000
@@ -13,7 +14,11 @@ app.get('/', (req, res) => {
 })
 
 // app.use('/fdsfs', )
-app.use('/products', productsApi.routes());
+app.use('/products', productsApi.routes({
+  productLoader(productId) {
+    return fetchProduct(productId);
+  },
+}));
 
 app.use(function errorHandler (err: Error, _req: express.Request, res: express.Response, next: any) {
   if (res.headersSent) {

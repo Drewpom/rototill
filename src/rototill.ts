@@ -1,13 +1,13 @@
 import Ajv from "ajv"
 import { RequestHandler, Router } from 'express';
 import { RouteBuilder } from './route-builder.js';
-import { HTTPMethod, Route, RouteMiddleware } from './types.js';
+import { HTTPMethod, Route } from './types.js';
 export { HTTPMethod } from './types.js';
 
-const compileRoute = (route: Route<any, any>): RequestHandler => {
+const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: InjectedContext): RequestHandler => {
   return async (req, res, next) => {
     try {
-      const injectedValues = {};
+      const injectedValues = injectedContext ?? {};
 
       for (let middleware of route.middlewares) {
         Object.assign(injectedValues, middleware(req, injectedValues));
@@ -21,7 +21,7 @@ const compileRoute = (route: Route<any, any>): RequestHandler => {
   };
 }
 
-export class Rototill {
+export class Rototill<InjectedContext = {}> {
   private _routes: Route<any, any>[];
   private ajv: Ajv.default;
 
@@ -33,18 +33,18 @@ export class Rototill {
   createRoute(
     method: HTTPMethod,
     path: string,
-    builderFunc: ((routeBuilder: RouteBuilder) => Route<any, any>)
-  ): Rototill {
+    builderFunc: ((routeBuilder: RouteBuilder<{ context: InjectedContext }>) => Route<any, any>)
+  ): Rototill<InjectedContext> {
     const route = builderFunc(RouteBuilder.new(this.ajv, method, path));
     this._routes.push(route);
 
     return this;
   }
 
-  routes(): Router {
+  routes(injectedContext: InjectedContext | undefined = undefined): Router {
     const router = Router();
     for (let route of this._routes) {
-      router[route.method](route.path, compileRoute(route));
+      router[route.method](route.path, compileRoute(route, injectedContext));
     }
 
     return router;

@@ -43,8 +43,8 @@ export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
     this.outputSchema = outputSchema;
   }
   
-  static new(ajv: Ajv.default, method: HTTPMethod,  path: string): RouteBuilder<{}, undefined> {
-    return new RouteBuilder<{}, undefined>(ajv, method,  path, [], undefined);
+  static new<InjectedContext>(ajv: Ajv.default, method: HTTPMethod,  path: string): RouteBuilder<InjectedContext, undefined> {
+    return new RouteBuilder<InjectedContext, undefined>(ajv, method,  path, [], undefined);
   }
 
   addMiddleware<NewInjectedValues>(

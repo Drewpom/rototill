@@ -4,9 +4,13 @@ export type Product = {
   name: string;
 }
 
-export const data: Product[] = [
+const data: Product[] = [
   {
     id: '12345',
     name: 'Test',
   }
 ]
+
+export const fetchProduct = (productId: string): Product | null => {
+  return data.find(p => p.id === productId) ?? null;
+}

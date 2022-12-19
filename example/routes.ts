@@ -1,9 +1,9 @@
 import {Rototill, HTTPMethod, RouteMiddleware} from '../src/index.js';
 import { JSONSchemaType } from 'ajv';
-import {Product, data} from './model.js';
+import {ServerContext} from './types.js';
+import {Product} from './model.js';
 
-export const productsApi = new Rototill();
-
+export const productsApi = new Rototill<ServerContext>();
 
 type ProductIdParamsSchema = {
   id: string,
@@ -19,10 +19,9 @@ const productIdSchema: JSONSchemaType<ProductIdParamsSchema> = {
   },
 }
 
-const fetchProductMidleware: RouteMiddleware<{ params: ProductIdParamsSchema }, { product: Product | null }> = ({ params }) => {
-  const productId = params.id;
+const fetchProductMidleware: RouteMiddleware<{ context: ServerContext, params: ProductIdParamsSchema }, { product: Product | null }> = (_, { context, params }) => {
   return {
-    product: data.find(p => p.id === productId) ?? null
+    product: context.productLoader(params.id)
   };
 };
 
