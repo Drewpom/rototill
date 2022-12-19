@@ -1,11 +1,15 @@
-import {Rototill, HTTPMethod} from '../src/index.js';
+import {Rototill, HTTPMethod, RouteMiddleware} from '../src/index.js';
 import { JSONSchemaType } from 'ajv';
+import {Product, data} from './model.js';
 
 export const productsApi = new Rototill();
 
-const productIdSchema: JSONSchemaType<{
+
+type ProductIdParamsSchema = {
   id: string,
-}> = {
+};
+
+const productIdSchema: JSONSchemaType<ProductIdParamsSchema> = {
   type: 'object',
   required: ['id'],
   properties: {
@@ -14,6 +18,13 @@ const productIdSchema: JSONSchemaType<{
     },
   },
 }
+
+const fetchProductMidleware: RouteMiddleware<{ params: ProductIdParamsSchema }, { product: Product | null }> = ({ params }) => {
+  const productId = params.id;
+  return {
+    product: data.find(p => p.id === productId) ?? null
+  };
+};
 
 productsApi
   .createRoute(HTTPMethod.Post, '/:id', builder => 
@@ -34,6 +45,17 @@ productsApi
         return {
           id: params.id,
           name: body.name,
+        };
+      })
+  )
+  .createRoute(HTTPMethod.Get, '/:id', builder => 
+    builder
+      .params(productIdSchema)
+      .addMiddleware(fetchProductMidleware)
+      .handler(({ params, product }) => {
+        return {
+          id: params.id,
+          name: product?.name,
         };
       })
   )

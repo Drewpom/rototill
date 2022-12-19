@@ -10,7 +10,7 @@ const compileRoute = (route: Route<any, any>): RequestHandler => {
       const injectedValues = {};
 
       for (let middleware of route.middlewares) {
-        Object.assign(injectedValues, middleware(req));
+        Object.assign(injectedValues, middleware(req, injectedValues));
       }
 
       const response = await route.handler(injectedValues, req);

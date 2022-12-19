@@ -14,11 +14,12 @@ export enum HTTPMethod {
 export type Route<InjectedValues, Output> = {
   method: HTTPMethod;
   path: string;
-  middlewares: Array<((request: Request) => InjectedValues)>;
+  middlewares: Array<((request: Request, values: InjectedValues) => InjectedValues)>;
   handler: (values: InjectedValues, request: Request) => MaybePromise<Output extends undefined ? any : Output>;
 }
 
-export type RouteMiddleware<NewInjectedValues> = (request: Request) => NewInjectedValues;
+export type RouteMiddleware<CurrentInjectedValues, NewInjectedValues> = (request: Request, currentInjectedValues: CurrentInjectedValues) => NewInjectedValues;
+export type AnyRouteMiddleware<CurrentInjectedValues> = (request: Request, currentInjectedValues: CurrentInjectedValues) => any;
 
 type GenericErrorObject = ErrorObject<string, Record<string, any>, unknown>;
 
