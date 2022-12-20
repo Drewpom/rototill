@@ -1,6 +1,6 @@
 {
   "name": "rototill",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A route building utility for Express to help with validation, typings, and OpenAPI specs for REST APIs",
   "main": "lib/index.js",
   "type": "module",
