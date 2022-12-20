@@ -10,7 +10,7 @@ const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: 
     try {
       const injectedValues = injectedContext ?? {};
 
-      for (let middleware of route.middlewares) {
+      for (const middleware of route.middlewares) {
         Object.assign(injectedValues, await middleware(req, injectedValues));
       }
 
@@ -54,15 +54,15 @@ export class Rototill<InjectedContext = {}> {
     const newChild = new Rototill<InjectedContext>(this.ajv);
     this.children.set(path, newChild);
     return newChild;
-  };
+  }
 
   routes(injectedContext: InjectedContext | undefined = undefined): Router {
     const router = Router();
-    for (let route of this._routes) {
+    for (const route of this._routes) {
       router[route.method](route.path, compileRoute(route, { context: injectedContext }));
     }
 
-    for (let [childPath, child] of this.children.entries()) {
+    for (const [childPath, child] of this.children.entries()) {
       router.use(childPath, child.routes(injectedContext));
     }
 
@@ -70,14 +70,14 @@ export class Rototill<InjectedContext = {}> {
   }  
 
   private _getAllRoutesWithPreifx(pathPrefix: string, accum: Route<any, any>[] = []): Route<any, any>[] {
-    for (let route of this._routes) {
+    for (const route of this._routes) {
       accum.push({
         ...route,
         path: convertPathToOpenAPIFormat(pathPrefix + route.path),
       })
     }
 
-    for (let [childPath, child] of this.children.entries()) {
+    for (const [childPath, child] of this.children.entries()) {
       child._getAllRoutesWithPreifx(pathPrefix + childPath, accum);
     }
 

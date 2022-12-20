@@ -27,7 +27,6 @@ const mainApi = Rototill.from<ServerContext>(new Map([
   ['/users', usersApi],
 ]))
 
-// app.use('/fdsfs', )
 app.use('/api', mainApi.routes(serverContext));
 
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(mainApi.generateOpenAPISpec('/api', {

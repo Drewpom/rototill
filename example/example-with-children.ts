@@ -1,7 +1,6 @@
-import {Rototill, HTTPMethod, AsyncRouteMiddleware} from '../src/index.js';
+import {Rototill, HTTPMethod} from '../src/index.js';
 import { JSONSchemaType } from 'ajv';
 import {ServerContext} from './types.js';
-import {Product} from './model.js';
 
 export const usersApi = new Rototill<ServerContext>();
 
