@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./lib/esm",
+    "module": "commonjs",
+    "outDir": "lib/cjs",
+    "target": "ES2017"
   },
   "include": [
     "./src"

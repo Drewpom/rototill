@@ -1,8 +1,9 @@
-import Ajv, {JSONSchemaType} from "ajv"
+import {JSONSchemaType} from "ajv"
+import { AJVInstance } from './schema-helpers.js';
 import { Request } from 'express';
 import { AsyncRouteMiddleware, AnyRouteMiddleware, RouteMiddleware, HTTPMethod, OptionalSchema, MaybePromise, Route, RototillValidationError } from './types.js';
  
-const createParamValidator = <Params>(ajv: Ajv.default, schema: JSONSchemaType<Params>): ((request: Request) => { params: Params }) => {
+const createParamValidator = <Params>(ajv: AJVInstance, schema: JSONSchemaType<Params>): ((request: Request) => { params: Params }) => {
   const validateParams = ajv.compile(schema);
 
   return (request) => {
@@ -15,7 +16,7 @@ const createParamValidator = <Params>(ajv: Ajv.default, schema: JSONSchemaType<P
   };
 }
 
-const createBodyValidator = <Body>(ajv: Ajv.default, schema: JSONSchemaType<Body>): ((request: Request) => { body: Body }) => {
+const createBodyValidator = <Body>(ajv: AJVInstance, schema: JSONSchemaType<Body>): ((request: Request) => { body: Body }) => {
   const validate = ajv.compile(schema);
 
   return (request) => {
@@ -29,7 +30,7 @@ const createBodyValidator = <Body>(ajv: Ajv.default, schema: JSONSchemaType<Body
 }
 
 export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
-  private ajv: Ajv.default;
+  private ajv: AJVInstance;
   private method: HTTPMethod;
   private path: string;
   private stages: AnyRouteMiddleware<InjectedValues>[];
@@ -38,7 +39,7 @@ export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
   private outputSchema: OptionalSchema<Output> | undefined;
 
   private constructor(
-    ajv: Ajv.default,
+    ajv: AJVInstance,
     method: HTTPMethod, 
     path: string,
     stages: AnyRouteMiddleware<InjectedValues>[],
@@ -56,7 +57,7 @@ export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
   }
   
   static new<InjectedContext, Output = {} | undefined>(
-    ajv: Ajv.default,
+    ajv: AJVInstance,
     method: HTTPMethod,
     path: string,
     outputSchema: OptionalSchema<Output> | undefined = undefined,

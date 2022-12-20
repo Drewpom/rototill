@@ -1,8 +1,8 @@
-import Ajv from "ajv"
 import { RequestHandler, Router } from 'express';
 import { RouteBuilder } from './route-builder.js';
 import { HTTPMethod, Route } from './types.js';
 import { convertPathToOpenAPIFormat } from "./utils.js";
+import { AJV, AJVInstance } from './schema-helpers.js';
 export { HTTPMethod } from './types.js';
 
 const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: InjectedContext): RequestHandler => {
@@ -24,10 +24,10 @@ const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: 
 
 export class Rototill<InjectedContext = {}> {
   private _routes: Route<any, any>[];
-  private ajv: Ajv.default;
+  private ajv: AJVInstance;
   private children: Map<string, Rototill<InjectedContext>>;
 
-  constructor(ajv: Ajv.default = new Ajv.default()) {
+  constructor(ajv: AJVInstance = new AJV()) {
     this._routes = [];
     this.ajv = ajv;
     this.children = new Map();

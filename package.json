@@ -2,15 +2,22 @@
   "name": "rototill",
   "version": "0.4.2",
   "description": "A route building utility for Express to help with validation, typings, and OpenAPI specs for REST APIs",
-  "main": "lib/index.js",
+  "exports": {
+      ".": {
+          "import": "./lib/esm/index.js",
+          "require": "./lib/cjs/index.js"
+      }
+  },
+  "main": "./lib/cjs/index.js",
   "type": "module",
-  "types": "./lib/index.d.ts",
+  "types": "./lib/cjs/index.js",
   "repository": {
     "url": "https://github.com/Drewpom/rototill"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --project tsconfig.build.json",
+    "build:cjs": "tsc --project tsconfig.build.cjs.json",
     "run-example": "ts-node-esm ./example/index.ts",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix"
