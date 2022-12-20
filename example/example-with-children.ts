@@ -18,13 +18,31 @@ const idSchema: JSONSchemaType<IdParamsSchema> = {
   },
 }
 
+const outputSchema: JSONSchemaType<{
+  id: string,
+  name: string,
+}> = {
+  type: 'object',
+  required: ['id', 'name'],
+  properties: {
+    id: {
+      type: 'string',
+    },
+    name: {
+      type: 'string',
+    }
+  },
+}
+
 usersApi
   .createRoute(HTTPMethod.Get, '/:id', builder => 
     builder
       .params(idSchema)
+      .output(outputSchema)
       .handler(({ params }) => {
         return {
           id: params.id,
+          name: 'test',
         };
       })
   )

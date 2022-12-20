@@ -128,7 +128,7 @@ export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
       path: this.path,
       paramSchema: this.paramSchema,
       bodySchema: this.bodySchema,
-      outputSchema: this.outputSchema,
+      outputSchema: this.outputSchema as JSONSchemaType<unknown> | undefined,
       middlewares: this.stages,
       handler: userHandler,
     };

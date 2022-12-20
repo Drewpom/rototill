@@ -16,7 +16,7 @@ export type Route<InjectedValues, Output> = {
   path: string;
   paramSchema: JSONSchemaType<unknown> | undefined;
   bodySchema: JSONSchemaType<unknown> | undefined;
-  outputSchema: OptionalSchema<Output> | undefined;
+  outputSchema: JSONSchemaType<unknown> | undefined;
   middlewares: AnyRouteMiddleware<InjectedValues>[];
   handler: (values: InjectedValues, request: Request) => MaybePromise<Output extends undefined ? any : Output>;
 }

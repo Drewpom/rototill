@@ -42,7 +42,7 @@ export class Rototill<InjectedContext = {}> {
   createRoute(
     method: HTTPMethod,
     path: string,
-    builderFunc: ((routeBuilder: RouteBuilder<{ context: InjectedContext }>) => Route<any, any>)
+    builderFunc: ((routeBuilder: RouteBuilder<{ context: InjectedContext }>) => Route<any, unknown>)
   ): Rototill<InjectedContext> {
     const route = builderFunc(RouteBuilder.new(this.ajv, method, path));
     this._routes.push(route);
