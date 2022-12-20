@@ -1,12 +1,12 @@
 {
   "name": "rototill",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A route building utility for Express to help with validation, typings, and OpenAPI specs for REST APIs",
   "exports": {
-      ".": {
-          "import": "./lib/esm/index.js",
-          "require": "./lib/cjs/index.js"
-      }
+    ".": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js"
+    }
   },
   "main": "./lib/cjs/index.js",
   "type": "module",
