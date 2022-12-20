@@ -2,11 +2,11 @@ import Ajv from "ajv"
 import { RequestHandler, Router } from 'express';
 import { RouteBuilder } from './route-builder.js';
 import { HTTPMethod, Route } from './types.js';
+import { convertPathToOpenAPIFormat } from "./utils.js";
 export { HTTPMethod } from './types.js';
 
 const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: InjectedContext): RequestHandler => {
   return async (req, res, next) => {
-    console.log('req.params', req.path)
     try {
       const injectedValues = injectedContext ?? {};
 
@@ -31,6 +31,12 @@ export class Rototill<InjectedContext = {}> {
     this._routes = [];
     this.ajv = ajv;
     this.children = new Map();
+  }
+
+  static from<InjectedContext>(children: Map<string, Rototill<InjectedContext>>): Rototill<InjectedContext> {
+    const root = new Rototill<InjectedContext>();
+    root.children = children;
+    return root;
   }
 
   createRoute(
@@ -62,90 +68,82 @@ export class Rototill<InjectedContext = {}> {
 
     return router;
   }  
+
+  private _getAllRoutesWithPreifx(pathPrefix: string, accum: Route<any, any>[] = []): Route<any, any>[] {
+    for (let route of this._routes) {
+      accum.push({
+        ...route,
+        path: convertPathToOpenAPIFormat(pathPrefix + route.path),
+      })
+    }
+
+    for (let [childPath, child] of this.children.entries()) {
+      child._getAllRoutesWithPreifx(pathPrefix + childPath, accum);
+    }
+
+    return accum;
+  }
+
+  generateOpenAPISpec(pathPrefix = "/", apiInfo: {
+    name?: string,
+    version?: string,
+  }) {
+    const res = this._getAllRoutesWithPreifx(pathPrefix)
+      .reduce((accum, route) => {
+        const fullPath = route.path;
+        if (!accum[fullPath]) {
+          accum[fullPath] = {};
+        }
+
+        const def: any = {
+          operationId: route.path,
+          parameters: [],
+          responses: {},
+        };
+
+        if (route.paramSchema) {
+          def.parameters = Object.entries(route.paramSchema.properties ?? {}).map(([param, paramSchema]) => {
+            return {
+              name: param,
+              in: 'path',
+              required: true,
+              schema: paramSchema,
+            };
+          });
+        }
+
+        if (route.bodySchema) {
+          def.requestBody = {
+            content: {
+              'application/json': {
+                schema: route.bodySchema,
+              },
+            },
+            required: true,
+          };
+        }
+
+        if (route.outputSchema) {
+          def.responses['200'] = {
+            content: {
+              'application/json': {
+                schema: route.outputSchema,
+              },
+            },
+          };
+        }
+
+        accum[fullPath][route.method.toLocaleLowerCase()] = def;
+        return accum;
+      }, {} as any);
+
+    return {
+      openapi: '3.0.1',
+      info: {
+        title: apiInfo.name,
+        version: apiInfo.version,
+      },
+      paths: res,
+    };
+  }
 }
-
-// private generateOpenAPI() {
-//   const res = this.apiFactories
-//     .map((api) => {
-//       if (!api.showInSwagger) {
-//         return undefined;
-//       }
-
-//       return api.controllers
-//         .map((c) => {
-//           const controller = c({} as any);
-//           return Object.entries(controller.endpoints).reduce((accum, [endpointName, endpoint]) => {
-//             const fullPath = api.basePath + controller.basePath + endpoint.path;
-//             if (!accum[fullPath]) {
-//               accum[fullPath] = {};
-//             }
-
-//             const def: any = {
-//               operationId: endpointName,
-//               parameters: [],
-//               responses: {},
-//               tags: [api.name],
-//             };
-
-//             if (endpoint.params) {
-//               def.parameters = Object.entries(endpoint.params.schema.properties ?? {}).map(([param, paramSchema]) => {
-//                 return {
-//                   name: param,
-//                   in: 'path',
-//                   required: true,
-//                   schema: paramSchema,
-//                 };
-//               });
-//             }
-
-//             if (endpoint.body) {
-//               def.requestBody = {
-//                 content: {
-//                   'application/json': {
-//                     schema: endpoint.body.schema,
-//                   },
-//                 },
-//                 required: true,
-//               };
-//             }
-
-//             if (endpoint.outputSchema) {
-//               def.responses['200'] = {
-//                 content: {
-//                   'application/json': {
-//                     schema: endpoint.outputSchema,
-//                   },
-//                 },
-//               };
-//             }
-
-//             accum[fullPath][endpoint.method.toLocaleLowerCase()] = def;
-//             return accum;
-//           }, {});
-//         })
-//         .reduce((accum, controller) => {
-//           return { ...accum, ...controller };
-//         }, {});
-//     })
-//     .filter(Boolean)
-//     .reduce((accum, controller) => {
-//       return { ...accum, ...controller };
-//     }, {});
-
-//   return {
-//     openapi: '3.0.1',
-//     info: {
-//       title: 'Noble',
-//       version: pkg.version,
-//     },
-//     paths: res,
-//     tags: this.apiFactories
-//       .filter((a) => a.showInSwagger)
-//       .map((api) => {
-//         return {
-//           name: api.name,
-//           description: '',
-//         };
-//       }),
-//   };
-// }

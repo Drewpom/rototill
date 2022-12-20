@@ -14,6 +14,9 @@ export enum HTTPMethod {
 export type Route<InjectedValues, Output> = {
   method: HTTPMethod;
   path: string;
+  paramSchema: JSONSchemaType<unknown> | undefined;
+  bodySchema: JSONSchemaType<unknown> | undefined;
+  outputSchema: OptionalSchema<Output> | undefined;
   middlewares: AnyRouteMiddleware<InjectedValues>[];
   handler: (values: InjectedValues, request: Request) => MaybePromise<Output extends undefined ? any : Output>;
 }
