@@ -1,8 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {productsApi} from './routes.js';
+import {usersApi} from './example-with-children.js';
 import {RototillValidationError} from '../src/index.js';
 import {fetchProduct} from './model.js';
+import { ServerContext } from './types.js';
 
 const app = express()
 const port = 3000
@@ -13,12 +15,16 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-// app.use('/fdsfs', )
-app.use('/products', productsApi.routes({
+const serverContext: ServerContext = {
   async productLoader(productId) {
     return fetchProduct(productId);
   },
-}));
+};
+
+// app.use('/fdsfs', )
+app.use('/products', productsApi.routes(serverContext));
+
+app.use('/users', usersApi.routes(serverContext));
 
 app.use(function errorHandler (err: Error, _req: express.Request, res: express.Response, next: any) {
   if (res.headersSent) {
