@@ -20,7 +20,8 @@
     "build:cjs": "tsc --project tsconfig.build.cjs.json",
     "run-example": "ts-node-esm ./example/index.ts",
     "lint": "npx eslint .",
-    "lint:fix": "npx eslint . --fix"
+    "lint:fix": "npx eslint . --fix",
+    "prepublish": "./scripts/fixBuild.sh"
   },
   "author": "",
   "license": "ISC",
