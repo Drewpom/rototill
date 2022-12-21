@@ -50,19 +50,15 @@ usersApi
 const friendsApi = usersApi.createPath('/:userId/friends')
 
 type FriendIdParamsSchema = {
-  userId: string,
-  friendId: string,
+  friendId: number,
 };
 
 const friendIdSchema: JSONSchemaType<FriendIdParamsSchema> = {
   type: 'object',
-  required: ['userId', 'friendId'],
+  required: ['friendId'],
   properties: {
-    userId: {
-      type: 'string',
-    },
     friendId: {
-      type: 'string',
+      type: 'integer',
     },
   },
 }
@@ -72,7 +68,6 @@ friendsApi.createRoute(HTTPMethod.Get, '/:friendId', builder =>
     .params(friendIdSchema)
     .handler(({ params }) => {
       return {
-        userId: params.userId,
         friendId: params.friendId,
       }
     }))

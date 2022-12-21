@@ -9,7 +9,7 @@ const createParamValidator = <Params>(ajv: AJVInstance, schema: JSONSchemaType<P
   return (request) => {
     const params = request.params;
     if (!validateParams(params)) {
-      throw new RototillValidationError(validateParams.errors!);
+      throw new RototillValidationError(validateParams.errors ?? []);
     }
 
     return { params };
@@ -22,115 +22,93 @@ const createBodyValidator = <Body>(ajv: AJVInstance, schema: JSONSchemaType<Body
   return (request) => {
     const body = request.body;
     if (!validate(body)) {
-      throw new RototillValidationError(validate.errors!);
+      throw new RototillValidationError(validate.errors ?? []);
     }
 
     return { body };
   };
 }
 
-export class RouteBuilder<InjectedValues = {}, Output = {} | undefined> {
-  private ajv: AJVInstance;
-  private method: HTTPMethod;
-  private path: string;
-  private stages: AnyRouteMiddleware<InjectedValues>[];
-  private paramSchema: JSONSchemaType<unknown> | undefined;
-  private bodySchema: JSONSchemaType<unknown> | undefined;
-  private outputSchema: OptionalSchema<Output> | undefined;
+type RouteBuilderState<InjectedValues = object, Output = unknown | undefined> = {
+  paramAjv: AJVInstance,
+  bodyAjv: AJVInstance,
+  method: HTTPMethod, 
+  path: string,
+  stages: AnyRouteMiddleware<InjectedValues>[],
+  outputSchema: OptionalSchema<Output> | undefined,
+  paramSchema: JSONSchemaType<unknown> | undefined,
+  bodySchema: JSONSchemaType<unknown> | undefined,
+}
 
-  private constructor(
-    ajv: AJVInstance,
-    method: HTTPMethod, 
-    path: string,
-    stages: AnyRouteMiddleware<InjectedValues>[],
-    outputSchema: OptionalSchema<Output> | undefined,
-    paramSchema: JSONSchemaType<unknown> | undefined,
-    bodySchema: JSONSchemaType<unknown> | undefined,
-  ) {
-    this.ajv = ajv;
-    this.method = method;
-    this.path = path;
-    this.stages = stages;
-    this.outputSchema = outputSchema;
-    this.paramSchema = paramSchema;
-    this.bodySchema = bodySchema;
+export class RouteBuilder<InjectedValues = object, Output = unknown | undefined> {
+  private state: RouteBuilderState<InjectedValues, Output>
+
+  private constructor(state: RouteBuilderState<InjectedValues, Output>) {
+    this.state = state;
   }
   
-  static new<InjectedContext, Output = {} | undefined>(
-    ajv: AJVInstance,
-    method: HTTPMethod,
-    path: string,
-    outputSchema: OptionalSchema<Output> | undefined = undefined,
-    paramSchema: JSONSchemaType<unknown> | undefined = undefined,
-    bodySchema: JSONSchemaType<unknown> | undefined = undefined,
-  ): RouteBuilder<InjectedContext, Output> {
-    return new RouteBuilder<InjectedContext, Output>(ajv, method,  path, [], outputSchema, paramSchema, bodySchema);
+  static new<InjectedContext>(paramAjv: AJVInstance, bodyAjv: AJVInstance, method: HTTPMethod, path: string): RouteBuilder<InjectedContext, undefined> {
+    return new RouteBuilder<InjectedContext, undefined>({
+      paramAjv,
+      bodyAjv,
+      method, 
+      path,
+      stages: [],
+      outputSchema: undefined,
+      paramSchema: undefined,
+      bodySchema: undefined,
+    });
   }
 
   addMiddleware<NewInjectedValues>(
     newStage: RouteMiddleware<InjectedValues, NewInjectedValues>
   ): RouteBuilder<InjectedValues & NewInjectedValues, Output> {
-    const newStages: AnyRouteMiddleware<InjectedValues>[] = this.stages.slice();
+    const newStages: AnyRouteMiddleware<InjectedValues>[] = this.state.stages.slice();
     newStages.push(newStage);
-    return new RouteBuilder<InjectedValues & NewInjectedValues, Output>(
-      this.ajv,
-      this.method,
-      this.path,
-      newStages,
-      this.outputSchema,
-      this.paramSchema,
-      this.bodySchema,
-    );
+    return new RouteBuilder<InjectedValues & NewInjectedValues, Output>({
+      ...this.state,
+      stages: newStages,
+    });
   }
 
   addAsyncMiddleware<NewInjectedValues>(
     newStage: AsyncRouteMiddleware<InjectedValues, NewInjectedValues>
   ): RouteBuilder<InjectedValues & NewInjectedValues, Output> {
-    const newStages: AnyRouteMiddleware<InjectedValues>[] = this.stages.slice();
+    const newStages: AnyRouteMiddleware<InjectedValues>[] = this.state.stages.slice();
     newStages.push(newStage);
-    return new RouteBuilder<InjectedValues & NewInjectedValues, Output>(
-      this.ajv,
-      this.method,
-      this.path,
-      newStages,
-      this.outputSchema,
-      this.paramSchema,
-      this.bodySchema,
-    );
+    return new RouteBuilder<InjectedValues & NewInjectedValues, Output>({
+      ...this.state,
+      stages: newStages,
+    });
   }
 
   params<Params>(params: JSONSchemaType<Params>): RouteBuilder<InjectedValues & { params: Params }, Output> {
-    const validator = createParamValidator(this.ajv, params);
-    this.paramSchema = params as JSONSchemaType<unknown>;
+    const validator = createParamValidator(this.state.paramAjv, params);
+    this.state.paramSchema = params as JSONSchemaType<unknown>;
     return this.addMiddleware(validator);
   }
 
   body<Body>(body: JSONSchemaType<Body>): RouteBuilder<InjectedValues & { body: Body }, Output> {
-    const validator = createBodyValidator(this.ajv, body);
-    this.bodySchema = body as JSONSchemaType<unknown>;
+    const validator = createBodyValidator(this.state.bodyAjv, body);
+    this.state.bodySchema = body as JSONSchemaType<unknown>;
     return this.addMiddleware(validator);
   }
 
-  output<NewOutput extends {}>(output: OptionalSchema<NewOutput>): RouteBuilder<InjectedValues, NewOutput> {
-    return new RouteBuilder<InjectedValues, NewOutput>(
-      this.ajv,
-      this.method,
-      this.path,
-      this.stages,
-      output,
-      this.paramSchema,
-      this.bodySchema,
-    );
+  output<NewOutput>(output: OptionalSchema<NewOutput>): RouteBuilder<InjectedValues, NewOutput> {
+    return new RouteBuilder<InjectedValues, NewOutput>({
+      ...this.state,
+      outputSchema: output,
+    });
   }
 
   handler(userHandler: (values: InjectedValues, request: Request) => MaybePromise<Output extends undefined ? any : Output>): Route<InjectedValues, Output> {
     return {
-      method: this.method,
-      path: this.path,
-      paramSchema: this.paramSchema,
-      bodySchema: this.bodySchema,
-      outputSchema: this.outputSchema as JSONSchemaType<unknown> | undefined,
-      middlewares: this.stages,
+      method: this.state.method,
+      path: this.state.path,
+      paramSchema: this.state.paramSchema,
+      bodySchema: this.state.bodySchema,
+      outputSchema: this.state.outputSchema as JSONSchemaType<unknown> | undefined,
+      middlewares: this.state.stages,
       handler: userHandler,
     };
   }

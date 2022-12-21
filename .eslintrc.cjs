@@ -3,7 +3,10 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   root: true,
-  ignorePatterns: ["**/lib/*.js"],
+  ignorePatterns: [
+    "**/lib/**/*.js",
+    "**/lib/**/*.d.ts"
+  ],
   rules: {
     '@typescript-eslint/no-explicit-any': 0
   }
