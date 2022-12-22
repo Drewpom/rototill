@@ -2,10 +2,10 @@
 A route building utility for Express to help with validation, typings, and OpenAPI specs for REST APIs
 
 ## Motivation
-I wanted to a light-weight way to have type-checked Express routes. [tsoa](https://github.com/lukeautry/tsoa) is a great library that achieves the same goal, however, the use of code generation to acheive the goal felt too heavy and added an extra build and development step that I wanted to avoid.
+I wanted a light-weight way to have type-checked Express routes. [tsoa](https://github.com/lukeautry/tsoa) is a great library that achieves the same goal, however, the use of code generation added an extra build and development step that I wanted to avoid.
 
 ## Usage
-Rototill exports a single `Rototill` class that can be used to build any number of routes. You can create multiple instances of `Rototill` for different sections of your API or you can use one single instance. Multiple instances are usually only needed if you want to generate separate OpenAPI specs.
+Rototill exports a single `Rototill` class that can be used to build any number of routes. You can create multiple instances of `Rototill` for different sections of your API or you can use one single instance.
 
 Example:
 ```
