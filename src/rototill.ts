@@ -15,7 +15,11 @@ const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: 
       }
 
       const response = await route.handler(injectedValues, req);
-      res.send(response);
+      if (response) {
+        res.send(response);
+      } else {
+        res.status(204).send();
+      }
     } catch (error) {
       next(error);
     }
