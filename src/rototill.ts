@@ -2,7 +2,7 @@ import { RequestHandler, Router } from 'express';
 import { RouteBuilder } from './route-builder.js';
 import { HTTPMethod, Route } from './types.js';
 import { convertPathToOpenAPIFormat } from "./utils.js";
-import { AJV, AJVInstance } from './schema-helpers.js';
+import { AJV, AJVInstance } from './schema-helpers.cjs';
 export { HTTPMethod } from './types.js';
 
 const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: InjectedContext): RequestHandler => {

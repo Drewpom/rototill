@@ -16,8 +16,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --project tsconfig.build.json",
+    "build:es": "tsc --project tsconfig.build.json",
     "build:cjs": "tsc --project tsconfig.build.cjs.json",
+    "build": "rm -rf lib/ && npm run build:cjs && npm run build:es && ./scripts/fixBuild.sh",
     "run-example": "ts-node-esm ./example/index.ts",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",

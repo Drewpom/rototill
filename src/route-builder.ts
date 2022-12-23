@@ -1,5 +1,5 @@
 import {JSONSchemaType} from "ajv"
-import { AJVInstance } from './schema-helpers.js';
+import { AJVInstance } from './schema-helpers.cjs';
 import { Request } from 'express';
 import { AsyncRouteMiddleware, AnyRouteMiddleware, RouteMiddleware, HTTPMethod, OptionalSchema, MaybePromise, Route, RototillValidationError } from './types.js';
  
