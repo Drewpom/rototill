@@ -28,13 +28,22 @@ const compileRoute = <InjectedContext>(route: Route<any, any>, injectedContext: 
 
 export class Rototill<InjectedContext = object> {
   private _routes: Route<any, any>[];
+  private queryAjv: AJVInstance;
   private paramAjv: AJVInstance;
   private bodyAjv: AJVInstance;
   private children: Map<string, Rototill<InjectedContext>>;
 
-  constructor(paramAjv: AJVInstance | null = null, bodyAjv: AJVInstance | null = null) {
+  constructor(
+    paramAjv: AJVInstance | null = null,
+    bodyAjv: AJVInstance | null = null,
+    queryAjv: AJVInstance | null = null
+  ) {
     this._routes = [];
     this.paramAjv = paramAjv ?? new AJV({
+      coerceTypes: true,
+    });
+
+    this.queryAjv = queryAjv ?? new AJV({
       coerceTypes: true,
     });
 
@@ -54,7 +63,7 @@ export class Rototill<InjectedContext = object> {
     path: string,
     builderFunc: ((routeBuilder: RouteBuilder<{ context: InjectedContext }>) => Route<any, unknown>)
   ): Rototill<InjectedContext> {
-    const route = builderFunc(RouteBuilder.new(this.paramAjv, this.bodyAjv, method, path));
+    const route = builderFunc(RouteBuilder.new(this.paramAjv, this.queryAjv, this.bodyAjv, method, path));
     this._routes.push(route);
 
     return this;

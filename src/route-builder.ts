@@ -16,6 +16,19 @@ const createParamValidator = <Params>(ajv: AJVInstance, schema: JSONSchemaType<P
   };
 }
 
+const createQueryValidator = <Query>(ajv: AJVInstance, schema: JSONSchemaType<Query>): ((request: Request) => { query: Query }) => {
+  const validateQuery = ajv.compile(schema);
+
+  return (request) => {
+    const query = request.query;
+    if (!validateQuery(query)) {
+      throw new RototillValidationError(validateQuery.errors ?? []);
+    }
+
+    return { query };
+  };
+}
+
 const createBodyValidator = <Body>(ajv: AJVInstance, schema: JSONSchemaType<Body>): ((request: Request) => { body: Body }) => {
   const validate = ajv.compile(schema);
 
@@ -31,12 +44,14 @@ const createBodyValidator = <Body>(ajv: AJVInstance, schema: JSONSchemaType<Body
 
 type RouteBuilderState<InjectedValues = object, Output = unknown | undefined> = {
   paramAjv: AJVInstance,
+  queryAjv: AJVInstance,
   bodyAjv: AJVInstance,
   method: HTTPMethod, 
   path: string,
   stages: AnyRouteMiddleware<InjectedValues>[],
   outputSchema: OptionalSchema<Output> | undefined,
   paramSchema: JSONSchemaType<unknown> | undefined,
+  querySchema: JSONSchemaType<unknown> | undefined,
   bodySchema: JSONSchemaType<unknown> | undefined,
 }
 
@@ -47,15 +62,17 @@ export class RouteBuilder<InjectedValues = object, Output = unknown | undefined>
     this.state = state;
   }
   
-  static new<InjectedContext>(paramAjv: AJVInstance, bodyAjv: AJVInstance, method: HTTPMethod, path: string): RouteBuilder<InjectedContext, undefined> {
+  static new<InjectedContext>(paramAjv: AJVInstance, queryAjv: AJVInstance, bodyAjv: AJVInstance, method: HTTPMethod, path: string): RouteBuilder<InjectedContext, undefined> {
     return new RouteBuilder<InjectedContext, undefined>({
       paramAjv,
+      queryAjv,
       bodyAjv,
       method, 
       path,
       stages: [],
       outputSchema: undefined,
       paramSchema: undefined,
+      querySchema: undefined,
       bodySchema: undefined,
     });
   }
@@ -80,6 +97,12 @@ export class RouteBuilder<InjectedValues = object, Output = unknown | undefined>
       ...this.state,
       stages: newStages,
     });
+  }
+
+  query<Query>(querySchema: JSONSchemaType<Query>): RouteBuilder<InjectedValues & { query: Query }, Output> {
+    const validator = createQueryValidator(this.state.queryAjv, querySchema);
+    this.state.querySchema = querySchema as JSONSchemaType<unknown>;
+    return this.addMiddleware(validator);
   }
 
   params<Params>(params: JSONSchemaType<Params>): RouteBuilder<InjectedValues & { params: Params }, Output> {
